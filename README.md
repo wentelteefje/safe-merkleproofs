@@ -9,7 +9,7 @@ Please cover the following topics in your post:
 ### 1. Introduction to Merkle Trees
 A merkle tree is a hash-based data structure that is constructed from arbitrary data with the use of a fixed hash function $H$. The main advantage of this data structure is that it allows us to prove the inclusion of a certain piece of data in this tree without the need to actually store the data itself. This is possible through the clever use of a hash function combined with a tree structure. A hash function can take an input of arbitrary length and always produces a *unique* fixed-length string. This means, that two different pieces of data will always result in two different hashes. In the following we are going to focus on binary Merkle trees, i.e. each node can have at most two children.
 
-Before delving into the general construction process of Merkle trees, let's examine a straightforward example. The diagram below illustrates a Merkle tree created using the strings `satoshi@nakamoto.com` and `vitalik@buterin.ca` with the SHA-256 hash function. This specific Merkle tree comprises only three nodes: two leaves and one root node.
+Before delving into the general construction process of Merkle trees, let's examine a minimal example. The diagram below illustrates a Merkle tree created using the strings `satoshi@nakamoto.com` and `vitalik@buterin.ca` with the `SHA-256` hash function. This specific Merkle tree comprises only three nodes: two leaves and one root node.
 
 ```mermaid
 graph TB;
@@ -36,7 +36,7 @@ A Merkle proof is a set of hashes that can be used to verify that a specific lea
 
 In our introductory example from the previous section the situation is very simple. A merkle proof for the inclusion of $D_1$ requires only the hash $H_2$, analagously the proof for $D_2$ requires knowledge of $H_1$. 
 
-A common use of Merkle trees in Web3 is maintaining whitelists, where users may be granted privileges, such as NFT minting, based on prior selection. In this scenario, unique user data must be stored in the whitelist. While real-world applications often use account addresses for this purpose, we'll simplify by extending our introduction example using email addresses.
+A common use of Merkle trees in Web3 is maintaining whitelists, where users may be granted privileges, such as NFT minting, based on prior selection. In this scenario, unique user data must be stored in the whitelist. While real-world applications often use account addresses for this purpose, we'll simplify by extending our introduction example using email addresses. Let's assume that our whitelist consists of the following three mail addresses: `satoshi@nakamoto.com`, `vitalik@buterin.ca` and `gavin@wood.de`.
 
 ```mermaid
 graph TB;
