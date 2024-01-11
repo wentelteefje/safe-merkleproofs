@@ -30,7 +30,7 @@ The root hash represents the entire set of leaf nodes and is a cryptographic com
 1. **Start with Leaf Nodes**: We begin by hashing the data to obtain a list of hash values. These hashes serve as the leaf nodes of the Merkle tree.
 2. **Pair and Hash**: We pair each leaf node with its adjacent sibling. For every such pair, we concatenate their hash values and hash the resultant value. This process creates the parent nodes at the next level of the tree. If a leaf node does not have a sibling, which happens when the number of leaf nodes is odd, we either duplicate that lone leaf or insert a leaf with a default value. This adjustment ensures an even number of nodes for pairing. Although not essential for Merkle proofs, this method is typically employed to enhance the efficiency of the data structure.
 
-This pairing and hashing process is repeated for each level of the tree until we reach the top of the tree. This single hash is the root of the Merkle tree. The root hash represents the entire set of leaf nodes and is used to verify the contents of the tree.
+This pairing and hashing process is repeated for each level of the tree until we reach the top of the tree. This single hash is the root of the Merkle tree.
 
 ### 2. Merkle Proofs for Whitelists
 A Merkle proof is a set of hashes that can be used to verify that a specific leaf is part of a Merkle tree. By utilizing the leaf hash and the hashes from the Merkle proof, we can recompute the Merkle root. This recomputed root is then compared to the publicly available Merkle root of the tree, confirming the inclusion of the leaf in the tree.
