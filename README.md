@@ -7,7 +7,7 @@ Please cover the following topics in your post:
 - Demonstrate it with an implementation of this in Javascript/Typescript and explain the code. Feel free to use an existing library to implement a Merkle Tree (there is no need to build a frontend for this).
 ## Merkle Trees and Merkle Proofs
 ### 1. Introduction to Merkle Trees
-A merkle tree is a hash-based data structure that is constructed from arbitrary data with the use of a fixed hash function. The main advantage of this data structure is that it allows us to prove the inclusion of a certain piece of data in this tree without the need to actually store the data itself. This is possible through the clever use of a hash function combined with a tree structure. A hash function can take an input of arbitrary length and always produces a *unique* fixed-length string. This means, that two different pieces of data will always result in two different hashes. In the following we are going to focus on binary Merkle trees, i.e. each node can have at most two children.
+A merkle tree is a hash-based data structure that is constructed from arbitrary data with the use of a fixed hash function $H$. The main advantage of this data structure is that it allows us to prove the inclusion of a certain piece of data in this tree without the need to actually store the data itself. This is possible through the clever use of a hash function combined with a tree structure. A hash function can take an input of arbitrary length and always produces a *unique* fixed-length string. This means, that two different pieces of data will always result in two different hashes. In the following we are going to focus on binary Merkle trees, i.e. each node can have at most two children.
 
 Before delving into the general construction process of Merkle trees, let's examine a straightforward example. The diagram below illustrates a Merkle tree created using the strings `satoshi@nakamoto.com` and `vitalik@buterin.ca` with the SHA-256 hash function. This specific Merkle tree comprises only three nodes: two leaves and one root node.
 
@@ -23,7 +23,7 @@ graph TB;
     style ED color:#12FF80, fill:none
     classDef safeStyle stroke:#12FF80
 ```
-The leaf nodes of this Merkle tree are formed by hashing the strings $D_1$ and $D_2$ using the `SHA-256` hash function. The root node is derived by concatenating these two hashes and hashing them again. It's important to note that the actual data, specifically the strings $D_1$ and $D_2$, are not included in the tree; only their hashes are.
+The leaf nodes of this Merkle tree are formed by hashing the strings $D_1$ and $D_2$ using the `SHA-256` hash function. The root node is derived by concatenating these two hashes and hashing the result again. It's important to note that the actual data, specifically the strings $D_1$ and $D_2$, are not included in the tree; only their hashes are.
 
 The root hash represents the entire set of leaf nodes and is a cryptographic commitment to the initial data set. If we would change just a single symbol of one of the input strings this would result in different leaf hashes and thus in a different root hash. This simple example already encapsulates the general construction procedure of a Merkle tree:
 
@@ -31,48 +31,57 @@ The root hash represents the entire set of leaf nodes and is a cryptographic com
 2. **Pair and Hash**: If the number of leaf nodes is not even, duplicate the last hash to make it even. Then, pair up the leaf nodes. For each pair, concatenate their hashes and hash this concatenated value. This creates the parent nodes one level up in the tree.
 3. **Repeat Process**: Repeat the pairing and hashing process for each level of the tree. If a level has an odd number of nodes, duplicate the last node to make it even, then pair and hash them. Continue this process until you reach the top of the tree. This single hash is the root of the Merkle tree. The root hash represents the entire set of leaf nodes and is used to verify the contents of the tree.
 
-### 2. Merkle Proofs
+### 2. Merkle Proofs for Whitelists
 A Merkle proof is a set of hashes that can be used to verify that a specific leaf is part of a Merkle tree. By utilizing the leaf hash and the hashes from the Merkle proof, we can recompute the Merkle root. This recomputed root is then compared to the publicly available Merkle root of the tree, confirming the inclusion of the leaf in the tree.
+
+In our introductory example from the previous section the situation is very simple. A merkle proof for the inclusion of $D_1$ requires only the hash $H_2$, analagously the proof for $D_2$ requires knowledge of $H_1$. 
+
+A common use of Merkle trees in Web3 is maintaining whitelists, where users may be granted privileges, such as NFT minting, based on prior selection. In this scenario, unique user data must be stored in the whitelist. While real-world applications often use account addresses for this purpose, we'll simplify by extending our introduction example using email addresses.
 
 ```mermaid
 graph TB;
-    A["H1234 = H(H12 + H34)"] --> B["H12 = H(H1+H2)"]
+    subgraph ED[ ]
+    A["H1234 = H(H12 + H34)"]
+    --> B["H12 = H(H1+H2)"];
     A-->C["H34 = H(H3+H4)"];
-    B-->D["H1"]
-    B-->E["H2"]
-    C-->F["H3"]
-    C-->G["H4"]
-    style F stroke:#12FF80,stroke-width:4px
-    style B stroke:#12FF80,stroke-width:2px,color:#fff,stroke-dasharray: 5 5
-    style G stroke:#12FF80,stroke-width:2px,color:#fff,stroke-dasharray: 5 5
+    B-->D["H1"];
+    B-->E["H2"];
+    C-->F["H3"];
+    C-->G["H4"];
+    end
+    D---H["D1 = 'satoshi@nakamoto.com'"]
+    E---I["D2 = 'vitalik@buterin.ca'"]
+    F---J["D3 = 'gavin@wood.de'"]
+    G---K["D4 = ' '"]
+    style ED color:#12FF80, fill:none
+    style E stroke:#12FF80,stroke-width:4px
+    style I stroke:#12FF80,stroke-width:4px
+    style D stroke:#12FF80,stroke-width:2px,color:#fff,stroke-dasharray: 5 5
+    style C stroke:#12FF80,stroke-width:2px,color:#fff,stroke-dasharray: 5 5
 ```
-**Example**: The leaves $H_1$ through $H_4$ of this Merkle tree are again obtained by hashing some data. The Merkle proof for $H_4$ is given by the array of hashes [$H_4$, $H_{12}$]. Given the root $H_{1234}$ of the tree we can verify the proof as follows:
-1. Compute $H'_{34}$ by concatenating and then hashing $H_3$ and $H_4$.
-2. Compute $H'_{1234}$ by concatenating and then hashing $H_{12}$ with the previously computed $H'_{34}$.
+**Example**: The leaves $H_1$ through $H_4$ of this Merkle tree are obtained by hashing the mail addresses of our whitelist. Additionally, we included $D_4$ as an empty string to keep the tree balanced. While not strictly necessary for Merkle proofs, this is typically done to increase the efficiency of the data structure (another way to ensure an even number of leaves is to just duplicate the last datum). The Merkle proof for $H_2$ is given by the array of hashes [$H_1$, $H_{34}$]. Given the root $H_{1234}$ of the tree we can verify the proof as follows:
+1. Compute $H'_{12}$ by concatenating and then hashing $H_1$ and $H_2$.
+2. Compute $H'_{1234}$ by concatenating and then hashing the previously computed $H'_{12}$ with $H_{34}$.
 3. Compare $H_{1234}$ with the computed $H'_{1234}$. If the hashes are equal, the proof is valid; otherwise, it is invalid.
 
-If we want to obtain a Merkle proof for $H_1$ instead, then the necessary hashes are $H_2$ and $H_{34}$.
+If we want to obtain a Merkle proof for $H_3$ instead, then the necessary hashes are $H_4$ and $H_{12}$.
 
 In general, a Merkle proof can be obtained by starting from the selected leaf and moving up the tree. At each level, select the sibling node (the node adjacent to the current node) and add it to the proof list. The sibling node is necessary because it provides the information needed to reconstruct the parent node at each step. Continue this process of moving up the tree, selecting sibling nodes at each level, until you reach the root of the Merkle tree. The collection of these sibling nodes forms the Merkle proof.
 
-In our introductory example from the previous section the situation is very simple. A merkle proof for the inclusion of $D_1$ requires only the hash $H_2$, analagously the proof for $D_2$ requires knowledge of $H_1$.
+The significant advantage of this approach in Web3 applications is that only the Merkle root needs to be stored on-chain. A smart contract can be employed to verify a proof for a particular leaf. This is crucial since block space is typically a costly resource.
 
-### 3. Application: Using Merkle Trees to Whitelist Mailaddresses
-A common application of Merkle trees in Web3 is to use them for whitelisting purposes. 
-
-- TODO: Explain how this structure can then be used with a web frontend
-### 4. JS Implementation using `merkletreejs`
+### 3. JS Implementation using `merkletreejs`
 **Prerequisites**: Node.js, npm
 
-In this example, we are going to use the JS library `merkletreejs` to implement a Merkle tree for mail whitelisting. More specifcally, we will showcase how to construct a Merkle tree based on the three mail addresses and how to construct and verify a corresponding Merkle proof for one of the addresses.
+In this section, we will use the JavaScript library `merkletreejs` to implement a Merkle tree for email whitelisting. Specifically, we will demonstrate how to construct a Merkle tree using three email addresses and how to obtain and verify the corresponding Merkle proofs.
 
-First create a new folder, initialise a fresh `npm` package and install `merkletreejs`, as well as `crypto-js`:
+First, create a new folder, initialize a new Node.js project using npm, and install `merkletreejs` along with `crypto-js`:
 ```bash
 npm init -y
 npm install merkletreejs crypto-js 
 ```
 
-Next create an empty `merkle.js` file and paste the following code snippet:
+Next, create an empty file named `merkle.js` and paste the following JavaScript code:
 ```Javascript
 const { MerkleTree } = require('merkletreejs')
 const SHA256 = require('crypto-js/sha256')
@@ -86,8 +95,7 @@ const tree = new MerkleTree(leaves, SHA256);
 // Log the tree
 console.log('Merkle tree:\n', tree.toString());
 ```
-
-This short code snippet implements the situation from above, where we constructed a Merkle tree using mail addresses as input data. As you can see we additionally added an empty string to the `leaves` array to balance the tree. We are using the `SHA256` implementation of `crypto-js` to obtain the `leaves` from our data, which serves as the base of the Merkle tree. After this, we are initializing a new Merkle tree by calling the `MerkleTree` constructor from `merkletreejs` and passing our `leaves` array, as well as the `SHA256` hash function. 
+This code snippet implements the scenario described earlier, where we construct a Merkle tree using email addresses as input data. Notice that we have also included an empty string in the `leaves` array to balance the tree. We use the `SHA256` function from `crypto-js` to generate the leaves from our data, which forms the foundation of the Merkle tree. Then, we initialize a new Merkle tree by invoking the `MerkleTree` constructor from `merkletreejs`, passing in our `leaves` array and the `SHA256` hash function.
 
 Running `node merkle.js` will log the newly created Merkle tree to the console:
 ```bash
@@ -103,16 +111,22 @@ Merkle tree:
 This output corresponds to the following tree diagram:
 ```mermaid
 graph TB;
+    subgraph ED[ ]
     A["0x309..."]:::safeStyle-->B["0x639..."]:::safeStyle;
     A-->C["0xfb2..."]:::safeStyle;
     B-->D["0x038..."]:::safeStyle;
     B-->E["0x67e..."]:::safeStyle;
     C-->F["0xc89..."]:::safeStyle;
     C-->G["0xe3b..."]:::safeStyle;
+    end
+    D---H["D1 = 'satoshi@nakamoto.com'"]
+    E---I["D2 = 'vitalik@buterin.ca'"]
+    F---J["D3 = 'gavin@wood.de'"]
+    G---K["D4 = ' '"]
     classDef safeStyle stroke:#12FF80
+    style ED color:#12FF80, fill:none
 ```
-
-If we wanted to confirm that the address `vitalik@buterin.ca` is part of this Merkle tree we can use the `getHexProof` method of the `tree` object to obtain a Merkle proof in hexadecimal representation. For this we only need the address hash. Add the following lines to your existing code:
+To verify if the email address `vitalik@buterin.ca` is included in the Merkle tree, we can use the `getHexProof` method from the `tree` object to obtain a Merkle proof in hexadecimal format. For this, we only require the hash of the address. Append the following lines to your existing code:
 ```Javascript
 // Get the Merkle proof for 'vitalik@buterin.ca'
 const leaf = SHA256('vitalik@buterin.ca');
@@ -121,14 +135,14 @@ const proof = tree.getHexProof(leaf);
 // Output the proof
 console.log('Merkle Proof for "vitalik@buterin.ca":', proof);
 ```
-Running `node merkle.js` again will log the desired Merkle proof to the console:
+Executing `node merkle.js` again will print the Merkle proof for `vitalik@buterin.ca` to the console:
 ```bash
 Merkle Proof for "vitalik@buterin.ca": [
   '0x038a33cbcf36f6fe7f270188fc4cd48087cd6dddc2120d39d5e225191676183e',
   '0xfb228476e81f4e4edd4b9d5ed03ed5b54cf37e9098e3835ae6df6b92410a78f3'
 ]
 ```
-Since the address `vitalik@buterin.ca` corresponds to the second leaf node from the left, we can visually confirm using the above tree diagram, that these are exactly the hashes needed for a valid Merkle proof. To confirm the validity of this proof, we can use the `verify` method of the `tree` object. Extend your code with the following lines and run `node merkle.js` once more:
+Since the address `vitalik@buterin.ca` is represented by the second leaf node from the left, we can visually verify, using the previous diagram, that these hashes are precisely what's needed for a valid Merkle proof. To confirm the proof's validity, we use the `verify` method of the `tree` object. Add the following lines to your code and execute `node merkle.js` once more:
 ```Javascript
 // Get the root of the tree
 const root = tree.getRoot().toString('hex');
