@@ -14,7 +14,7 @@ Before delving into the general construction process of Merkle trees, let's exam
 ```mermaid
 graph TB;
     subgraph ED[ ]
-    A["Root Hash\n = SHA256(H1 + H2)"]:::safeStyle-->
+    A["H12 = SHA256(H1 + H2)"]:::safeStyle-->
     B["H1 = SHA256(D1)"]:::safeStyle;
     A-->C["H2 = SHA256(D2)"]:::safeStyle;
     end
@@ -23,7 +23,7 @@ graph TB;
     style ED color:#12FF80, fill:none
     classDef safeStyle stroke:#12FF80
 ```
-The leaf nodes of this Merkle tree are formed by hashing the strings $D_1$ and $D_2$ using the `SHA-256` hash function. The root node is derived by concatenating these two hashes and hashing the result again. It's important to note that the actual data, specifically the strings $D_1$ and $D_2$, are not included in the tree; only their hashes are.
+The leaf nodes of this Merkle tree are formed by hashing the strings $D_1$ and $D_2$ using the `SHA-256` hash function. The root node $H_{12}$ is derived by concatenating these two hashes and hashing the result again. It's important to note that the actual data, specifically the strings $D_1$ and $D_2$, are not included in the tree; only their hashes are.
 
 The root hash represents the entire set of leaf nodes and is a cryptographic commitment to the initial data set. If we would change just a single symbol of one of the input strings this would result in different leaf hashes and thus in a different root hash. This simple example already encapsulates the general construction procedure of a Merkle tree:
 
