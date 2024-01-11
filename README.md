@@ -61,7 +61,7 @@ graph TB;
 ```
 **Example**: The leaves $H_1$ through $H_4$ of this Merkle tree are obtained by hashing the mail addresses of our whitelist. Additionally, we included $D_4$ as an empty string to keep the tree balanced. While not strictly necessary for Merkle proofs, this is typically done to increase the efficiency of the data structure (another way to ensure an even number of leaves is to just duplicate the last datum). The Merkle proof for $H_2$ is given by the array of hashes $`[H_{1}, H_{34}]`$. Given the root $H_{1234}$ of the tree we can verify the proof as follows:
 1. Compute $H'_{12}$ by concatenating and then hashing $H_1$ and $H_2$.
-2. Compute $H'_{1234}$ by concatenating and then hashing the previously computed $H'_{12}$ with $H_{34}$.
+2. Compute $`H'_{1234}`$ by concatenating and then hashing the previously computed $`H'_{12}`$ with $H_{34}$.
 3. Compare $H_{1234}$ with the computed $H'_{1234}$. If the hashes are equal, the proof is valid; otherwise, it is invalid.
 
 If we want to obtain a Merkle proof for $H_3$ instead, then the necessary hashes are $H_4$ and $H_{12}$.
