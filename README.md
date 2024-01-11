@@ -27,8 +27,8 @@ The leaf nodes of this Merkle tree are formed by hashing the strings $D_1$ and $
 
 The root hash represents the entire set of leaf nodes and is a cryptographic commitment to the initial data set. If we would change just a single symbol of one of the input strings this would result in different leaf hashes and thus in a different root hash. This simple example already encapsulates the general construction procedure of a Merkle tree:
 
-1. **Start with Leaf Nodes**: Begin by hashing the data to obtain a list of hash values. These hashes are the leaf nodes of the Merkle tree.
-2. **Pair and Hash**: Pair each leaf node with its immediate adjacent sibling. For every such pair, concatenate their hash values and hash the resultant string. This process creates the parent nodes at the next level of the tree. If a leaf node does not have a sibling (which occurs when the number of leaf nodes is odd), you should either duplicate that lone leaf or insert a leaf with a default value. This adjustment ensures an even number of nodes for pairing. Though not mandatory for Merkle proofs, this approach is generally adopted to improve the efficiency of the data structure.
+1. **Start with Leaf Nodes**: We begin by hashing the data to obtain a list of hash values. These hashes serve as the leaf nodes of the Merkle tree.
+2. **Pair and Hash**: We pair each leaf node with its adjacent sibling. For every such pair, we concatenate their hash values and hash the resultant value. This process creates the parent nodes at the next level of the tree. If a leaf node does not have a sibling, which happens when the number of leaf nodes is odd, we either duplicate that lone leaf or insert a leaf with a default value. This adjustment ensures an even number of nodes for pairing. Although not essential for Merkle proofs, this method is typically employed to enhance the efficiency of the data structure.
 
 This pairing and hashing process is repeated for each level of the tree until we reach the top of the tree. This single hash is the root of the Merkle tree. The root hash represents the entire set of leaf nodes and is used to verify the contents of the tree.
 
@@ -67,7 +67,7 @@ graph TB;
 
 If we want to obtain a Merkle proof for $H_3$ instead, then the necessary hashes are $H_4$ and $H_{12}$.
 
-In general, a Merkle proof can be obtained by starting from the selected leaf and moving up the tree. At each level, select the sibling node (the node adjacent to the current node) and add it to the proof list. The sibling node is necessary because it provides the information needed to reconstruct the parent node at each step. Continue this process of moving up the tree, selecting sibling nodes at each level, until you reach the root of the Merkle tree. The collection of these sibling nodes forms the Merkle proof.
+In general, we can obtain a Merkle proof by starting from the selected leaf and moving up the tree. At each level, we select the sibling node (the node adjacent to the current node) and add it to the proof list. The sibling node is necessary because it provides the information needed to reconstruct the parent node at each step. We continue this process of moving up the tree, selecting sibling nodes at each level, until we reach the root of the Merkle tree. The collection of these sibling nodes forms the Merkle proof.
 
 The significant advantage of this approach in Web3 applications is that only the Merkle root needs to be stored on-chain. A smart contract can be employed to verify a proof for a particular leaf. This is crucial since block space is typically a costly resource.
 
