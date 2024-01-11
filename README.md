@@ -27,16 +27,17 @@ The leaf nodes of this Merkle tree are formed by hashing the strings $D_1$ and $
 
 The root hash represents the entire set of leaf nodes and is a cryptographic commitment to the initial data set. If we would change just a single symbol of one of the input strings this would result in different leaf hashes and thus in a different root hash. This simple example already encapsulates the general construction procedure of a Merkle tree:
 
-1. **Start with Leaf Nodes**: Begin with your list of hash values. These hashes are the leaf nodes of the Merkle tree.
-2. **Pair and Hash**: If the number of leaf nodes is not even, duplicate the last hash to make it even. Then, pair up the leaf nodes. For each pair, concatenate their hashes and hash this concatenated value. This creates the parent nodes one level up in the tree.
-3. **Repeat Process**: Repeat the pairing and hashing process for each level of the tree. If a level has an odd number of nodes, duplicate the last node to make it even, then pair and hash them. Continue this process until you reach the top of the tree. This single hash is the root of the Merkle tree. The root hash represents the entire set of leaf nodes and is used to verify the contents of the tree.
+1. **Start with Leaf Nodes**: Begin by hashing the data to obtain a list of hash values. These hashes are the leaf nodes of the Merkle tree.
+2. **Pair and Hash**: Pair each leaf node with its immediate adjacent sibling. For every such pair, concatenate their hash values and hash the resultant string. This process creates the parent nodes at the next level of the tree. If a leaf node does not have a sibling (which occurs when the number of leaf nodes is odd), you should either duplicate that lone leaf or insert a leaf with a default value. This adjustment ensures an even number of nodes for pairing. Though not mandatory for Merkle proofs, this approach is generally adopted to improve the efficiency of the data structure.
+
+This pairing and hashing process is repeated for each level of the tree until we reach the top of the tree. This single hash is the root of the Merkle tree. The root hash represents the entire set of leaf nodes and is used to verify the contents of the tree.
 
 ### 2. Merkle Proofs for Whitelists
 A Merkle proof is a set of hashes that can be used to verify that a specific leaf is part of a Merkle tree. By utilizing the leaf hash and the hashes from the Merkle proof, we can recompute the Merkle root. This recomputed root is then compared to the publicly available Merkle root of the tree, confirming the inclusion of the leaf in the tree.
 
 In our introductory example from the previous section the situation is very simple. A merkle proof for the inclusion of $D_1$ requires only the hash $H_2$, analagously the proof for $D_2$ requires knowledge of $H_1$. 
 
-A common use of Merkle trees in Web3 is maintaining whitelists, where users may be granted privileges, such as NFT minting, based on prior selection. In this scenario, unique user data must be stored in the whitelist. While real-world applications often use account addresses for this purpose, we'll simplify by extending our introduction example using email addresses. Let's assume that our whitelist consists of the following three mail addresses: `satoshi@nakamoto.com`, `vitalik@buterin.ca` and `gavin@wood.de`.
+A common use of Merkle trees in Web3 is maintaining whitelists, where users may be granted privileges, such as NFT minting, based on prior selection. In this scenario, unique user data must be stored in the whitelist. While real-world applications often use account addresses for this purpose, we'll simplify by extending our introduction example using email addresses. Let's assume that our whitelist consists of the following three email addresses: `satoshi@nakamoto.com`, `vitalik@buterin.ca` and `gavin@wood.de`.
 
 ```mermaid
 graph TB;
@@ -59,7 +60,7 @@ graph TB;
     style D stroke:#12FF80,stroke-width:2px,color:#fff,stroke-dasharray: 5 5
     style C stroke:#12FF80,stroke-width:2px,color:#fff,stroke-dasharray: 5 5
 ```
-**Example**: The leaves $H_1$ through $H_4$ of this Merkle tree are obtained by hashing the mail addresses of our whitelist. Additionally, we included $D_4$ as an empty string to keep the tree balanced. While not strictly necessary for Merkle proofs, this is typically done to increase the efficiency of the data structure (another way to ensure an even number of leaves is to just duplicate the last datum). The Merkle proof for $H_2$ is given by the array of hashes $`[H_{1}, H_{34}]`$. Given the root $H_{1234}$ of the tree we can verify the proof as follows:
+**Example**: The leaves $H_1$ through $H_4$ of this Merkle tree are obtained by hashing the email addresses of our whitelist. Additionally, we included $D_4$ as an empty string to keep the tree balanced. The Merkle proof for $H_2$ is given by the array of hashes $`[H_{1}, H_{34}]`$. Given the root $H_{1234}$ of the tree we can verify the proof as follows:
 1. Compute $H'_{12}$ by concatenating and then hashing $H_1$ and $H_2$.
 2. Compute $`H'_{1234}`$ by concatenating and then hashing the previously computed $`H'_{12}`$ with $H_{34}$.
 3. Compare $H_{1234}$ with the computed $H'_{1234}$. If the hashes are equal, the proof is valid; otherwise, it is invalid.
