@@ -1,6 +1,6 @@
 # SAFE - Take-home assignment
 ## Merkle Trees and Merkle Proofs
-This article provides a brief overview of Merkle trees and Merkle proofs, explaining how they function and their importance in blockchain systems. We'll discuss how to construct Merkle trees and generate Merkle proofs with a focus on both the theory and practical examples.
+In this article, we'll explore Merkle trees and Merkle proofs, covering how they work, their role in blockchain systems, and how to build them with a focus on both theory and practical examples.
 
 ### 1. Introduction to Merkle Trees
 A Merkle tree is a hash-based data structure constructed from arbitrary data using a fixed hash function $H$. The primary advantage of this data structure is that it enables us to prove the inclusion of a certain piece of data in the tree without needing to store the data itself. This is possible through the clever use of a hash function combined with a tree structure. A hash function accepts input of arbitrary length and consistently produces a unique fixed-length string, meaning that two different pieces of data will always yield two distinct hashes. In what follows, we will focus on binary Merkle trees, where each node can have at most two children.
